@@ -1,0 +1,20 @@
+{
+  "name": "itvisionsy/payfort-php-sdk",
+  "description": "PayFort PHP SDK",
+  "minimum-stability": "dev",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Muhannad Shelleh",
+      "email": "muhannad.shelleh@live.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "ItvisionSy\\Payment\\PayFort\\": "src/"
+    },
+    "files": [
+      "autoload.php"
+    ]
+  }
+}
