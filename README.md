@@ -1,6 +1,5 @@
-# payfort-php-integration
-Payfort payment gateway integration library for PHP
-=======
+# Payfort payment gateway integration library for PHP
+
 # 1 Setup
 ## 1.1 Automatically using composer
 Just require it `composer require itvisionsy/payfort-php`.
