@@ -2,7 +2,10 @@
 Payfort payment gateway integration library for PHP
 =======
 # 1 Setup
-## 1.1 Using Composer
+## 1.1 Automatically using composer
+Just require it `composer require itvisionsy/payfort-php`.
+
+## 1.2 Manually using Composer
 You will need to add the `ItvisionSy\Payment\PayFort\` as a PSR-4 namespace pointing to the path of the library root, and the `autoload.php` file at the files section.
 Let us say you have the following structure:
 ```
@@ -22,7 +25,7 @@ In the `composer.json` file, you need to have the following definition:
     ]
   }
 ```
-## 1.2 Using Autoload.php
+## 1.3 Manually using Autoload.php
 You will need to require the `autoload.php` file before using the library.
 # 2 Configuration
 You can configure the payment in one of following ways:
