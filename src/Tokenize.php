@@ -30,7 +30,6 @@ class Tokenize {
      */
     public function tokenize(PaymentModel $model, CreditCard $card) {
         $data = [
-            'token_name' => generateTokenName($model),
             'merchant_identifier' => $this->config->getMerchantIdentifier(),
             'access_code' => $this->config->getAccessCode(),
             'merchant_reference' => $model->reference(),
@@ -40,10 +39,16 @@ class Tokenize {
         ];
         $signature = Sign::make($this->config)->forRequest($this->signatureData($data));
         $data['signature'] = $signature;
+        $postData = $data + [
+            'card_number' => $card->getCardNumber(),
+            'expiry_date' => $card->getCardExpiryDate(),
+            'card_holder_name' => $card->getCardHolderName(),
+            'card_security_code' => $card->getCardCVV2()
+        ];
         if ($this->config->isSendAsNormalHttpPost()) {
-            $this->sendAsNormalPostRequest($data, $model, $card);
+            $this->sendAsNormalPostRequest($postData);
         } else {
-            $this->sendAsInternalPostRequest($data, $model, $card);
+            $this->sendAsInternalPostRequest($postData);
         }
     }
 
@@ -54,15 +59,18 @@ class Tokenize {
         return $this->config->isSandbox() ? "https://sbcheckout.PayFort.com/FortAPI/paymentPage" : "https://checkout.PayFort.com/FortAPI/paymentPage";
     }
 
-    protected function sendAsNormalPostRequest(array $data, PaymentModel $model, CreditCard $card) {
-        echo <<<FORM
-<html><head></head><body> <form method="POST" action="{$this->apiUrl()}" id="authorize-frm"> <input type="hidden" name="card_number" value="{$card->getCardNumber()}"/> <input type="hidden" name="expiry_date" value="{$card->getCardExpiryDate()}"/> <input type="hidden" name="card_holder_name" value="{$card->getCardHolderName()}"/> <input type="hidden" name="card_security_code" value="{$card->getCardCVV2()}"/> <input type="hidden" name="service_command" value="{$data["service_command"]}"/> <input type="hidden" name="merchant_identifier" value="{$data["merchant_identifier"]}"/> <input type="hidden" name="access_code" value="{$data["access_code"]}"/> <input type="hidden" name="signature" value="{$data["signature"]}"/> <input type="hidden" name="merchant_reference" value="{$data["merchant_reference"]}"/> <input type="hidden" name="language" value="{$data["language"]}"/> <input type="hidden" name="return_url" value="{$data["return_url"]}"/> </form><script>function submitForm(){document.getElementById("authorize-frm").submit();}submitForm();</script></body></html>
-FORM;
+    protected function sendAsNormalPostRequest(array $data) {
+        echo "<html><head></head><body> <form method='POST' action='{$this->apiUrl()}' id='authorize-frm'>";
+        foreach ($data as $key => $value) {
+            echo "<input type='hidden' name='{$key}' value='{$value}' />";
+        }
+        echo "</form><script>function submitForm(){document.getElementById('authorize-frm').submit();}submitForm();</script></body></html>";
         exit;
     }
 
-    protected function sendAsInternalPostRequest(array $data, PaymentModel $model, CreditCard $card) {
-        return $this->sendAsInternalPostRequest($data, $model, $card);
+    protected function sendAsInternalPostRequest(array $data) {
+        //@TODO:implement this
+        return $this->sendAsNormalPostRequest($data);
     }
 
     protected function signatureData(array $data) {

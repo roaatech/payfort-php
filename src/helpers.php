@@ -1,5 +1,8 @@
 <?php
 
+use PremierPayments\Models\Transaction as TransactionModel;
+use PremierPayments\Models\Order as OrderModel;
+
 if (!function_exists('json')) {
 
     function json(array $data) {
@@ -76,28 +79,21 @@ if (!function_exists('session_handler')) {
 /**
  *
  * @param string $reference
- * @return ItvisionSy\Payment\PayFort\Contracts\PaymentModel|TransactionModel|OrderModel
+ * @return \ItvisionSy\Payment\PayFort\Contracts\PaymentModel|OrderModel
  */
 function load_payment_model($reference) {
-    $exploded = TransactionModel::explodeReference($reference);
-    if (count($exploded) == 2) {
-        return TransactionModel::retrieveByPK($exploded[1]);
-    } else {
-        return OrderModel::retrieveByReference($exploded[0], OrderModel::FETCH_ONE);
-    }
+    return OrderModel::retrieveByReference($reference, OrderModel::FETCH_ONE);
 }
 
 function generateTokenName(TransactionModel $model) {
     $data = $model->id;
-    $userId = $model->orderModel()->user_id;
-    $key = null; //str_pad('', config('security.crypt.key_length'), $userId);
-    $token = encryptString($data, $key);
+    $userId = $model->order()->user_id;
+    $token = encryptString($data);
     return $token;
 }
 
 function decryptTokenName($token, $userId) {
-    $key = null; //str_pad('', config('security.crypt.key_length'), $userId);
-    return decryptString($token, $key);
+    return decryptString($token);
 }
 
 function encryptString($string, $key = null) {

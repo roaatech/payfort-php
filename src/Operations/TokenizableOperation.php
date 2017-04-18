@@ -1,12 +1,5 @@
 <?php
 
-/**
- * Created by PhpStorm.
- * User: mhh1422
- * Date: 03/01/2017
- * Time: 8:46 AM
- */
-
 namespace ItvisionSy\Payment\PayFort\Operations;
 
 use Exception;
@@ -68,7 +61,7 @@ abstract class TokenizableOperation extends Operation {
                 case 'TOKENIZATION':
                     //tokenization finished, now should do the logic of purchase,
                     $tokenName = @$responseCode['token_name'];
-                    $this->tokenGenerated($tokenName, $reference, $model);
+                    $this->tokenGenerated($tokenName, $model, $responseData);
                     return $this->process($responseData);
                     break;
                 case $this->command():
@@ -83,10 +76,10 @@ abstract class TokenizableOperation extends Operation {
         //throw new InvalidResponseStructure("Response does not seem of a valid type or structure.");
     }
 
-    protected function tokenGenerated($tokenName, $reference, PaymentModel $paymentModel = null) {
+    protected function tokenGenerated($tokenName, PaymentModel $paymentModel = null, array $responseData = null) {
         //by default, token should not be saved unless it is an authorize or recurrent payment
         //hence, nothing to do
-        dd($tokenName, $reference, $paymentModel);
+        dd($tokenName, $paymentModel, $responseData);
     }
 
 }
