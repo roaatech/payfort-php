@@ -1,7 +1,6 @@
 <?php
 
-use PremierPayments\Models\Transaction as TransactionModel;
-use PremierPayments\Models\Order as OrderModel;
+use PremierPayments\Models;
 
 if (!function_exists('json')) {
 
@@ -79,13 +78,13 @@ if (!function_exists('session_handler')) {
 /**
  *
  * @param string $reference
- * @return \ItvisionSy\Payment\PayFort\Contracts\PaymentModel|OrderModel
+ * @return Models\Order
  */
 function load_payment_model($reference) {
-    return OrderModel::retrieveByReference($reference, OrderModel::FETCH_ONE);
+    return Models\Order::retrieveByReference($reference, Models\Order::FETCH_ONE);
 }
 
-function generateTokenName(TransactionModel $model) {
+function generateTokenName(Models\Transaction $model) {
     $data = $model->id;
     $userId = $model->order()->user_id;
     $token = encryptString($data);

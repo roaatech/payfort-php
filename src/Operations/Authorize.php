@@ -20,27 +20,7 @@ abstract class Authorize extends TokenizableOperation {
         $model = $this->getPaymentModel($reference);
 
         //prepare real API request data
-        $apiRequestData = [
-            'command' => $this->command(),
-            'merchant_identifier' => $this->config->getMerchantIdentifier(),
-            'access_code' => $this->config->getAccessCode(),
-            'customer_email' => $model->customerEmail(),
-            'currency' => strtoupper($model->currency()),
-            'amount' => AmountDecimals::forRequest($model->amount(), $model->currency()),
-            'language' => $this->config->getLanguage(),
-            'token_name' => $responseData['token_name'],
-            'merchant_reference' => $reference,
-            'customer_name' => $model->customerName(),
-            'customer_ip' => $_SERVER['REMOTE_ADDR']
-                ] + ($model->description() ? ['order_description' => $model->description()] : []);
-
-        //remove the customer IP if the IP is not correct. i.e. IPv6 or localhost
-        if (!filter_var($apiRequestData['customer_ip'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_NO_PRIV_RANGE)) {
-            unset($apiRequestData['customer_ip']);
-        }
-
-        //calculate request signature
-        $apiRequestData['signature'] = Sign::make($this->config)->forRequest($apiRequestData);
+        $apiRequestData = $this->getApiData($responseData, $reference, $model);
 
         //send the request
         $apiResponseData = $this->callApi($apiRequestData);
@@ -74,6 +54,32 @@ abstract class Authorize extends TokenizableOperation {
 
     protected function getFortReference(array $responseData) {
         return $responseData['fort_id'];
+    }
+
+    protected function getApiData($responseData, $reference, $model) {
+        $apiRequestData = [
+            'command' => $this->command(),
+            'merchant_identifier' => $this->config->getMerchantIdentifier(),
+            'access_code' => $this->config->getAccessCode(),
+            'customer_email' => $model->customerEmail(),
+            'currency' => strtoupper($model->currency()),
+            'amount' => AmountDecimals::forRequest($model->amount(), $model->currency()),
+            'language' => $this->config->getLanguage(),
+            'token_name' => $responseData['token_name'],
+            'merchant_reference' => $reference,
+            'customer_name' => $model->customerName(),
+            'customer_ip' => $_SERVER['REMOTE_ADDR']
+                ] + ($model->description() ? ['order_description' => $model->description()] : []) + (@$responseData['card_security_code'] ? ['card_security_code' => $responseData['card_security_code']] : []);
+
+        //remove the customer IP if the IP is not correct. i.e. IPv6 or localhost
+        if (!filter_var($apiRequestData['customer_ip'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_NO_PRIV_RANGE)) {
+            unset($apiRequestData['customer_ip']);
+        }
+
+        //calculate request signature
+        $apiRequestData['signature'] = Sign::make($this->config)->forRequest($apiRequestData);
+
+        return $apiRequestData;
     }
 
 }

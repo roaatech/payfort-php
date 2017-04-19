@@ -69,7 +69,7 @@ abstract class Purchase extends TokenizableOperation {
             'merchant_reference' => $reference,
             'customer_name' => $model->customerName(),
             'customer_ip' => $_SERVER['REMOTE_ADDR']
-                ] + ($model->description() ? ['order_description' => $model->description()] : []);
+                ] + ($model->description() ? ['order_description' => $model->description()] : []) + (@$responseData['card_security_code'] ? ['card_security_code' => $responseData['card_security_code']] : []);
 
         //remove the customer IP if the IP is not correct. i.e. IPv6 or localhost
         if (!filter_var($apiRequestData['customer_ip'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_NO_PRIV_RANGE)) {
