@@ -17,10 +17,8 @@ interface PaymentModel
 
     public function customerName();
 
-    public function payfortAuthorizationToken();
-
     public function payfortId();
 
-    public function payfortAuthorizationCode();
+    public function authorizationCode();
 
 }

@@ -1,8 +1,5 @@
 <?php
 
-use PremierPayments\Models\Transaction as TransactionModel;
-use PremierPayments\Models\Order as OrderModel;
-
 if (!function_exists('json')) {
 
     function json(array $data) {
@@ -74,40 +71,4 @@ if (!function_exists('session_handler')) {
         }
     }
 
-}
-
-/**
- *
- * @param string $reference
- * @return \ItvisionSy\Payment\PayFort\Contracts\PaymentModel|OrderModel
- */
-function load_payment_model($reference) {
-    return OrderModel::retrieveByReference($reference, OrderModel::FETCH_ONE);
-}
-
-function generateTokenName(TransactionModel $model) {
-    $data = $model->id;
-    $userId = $model->order()->user_id;
-    $token = encryptString($data);
-    return $token;
-}
-
-function decryptTokenName($token, $userId) {
-    return decryptString($token);
-}
-
-function encryptString($string, $key = null) {
-    $iv = config('security.crypt.iv');
-    $key = $key ?: config('security.crypt.key');
-    $method = config('security.crypt.method');
-    $encryptedMessage = base64_encode(@openssl_encrypt($string, $method, $key, 0, $iv));
-    return $encryptedMessage;
-}
-
-function decryptString($string, $key = null) {
-    $iv = config('security.crypt.iv');
-    $key = $key ?: config('security.crypt.key');
-    $method = config('security.crypt.method');
-    $decryptedMessage = @openssl_decrypt(base64_decode($string), $method, $key, 0, $iv);
-    return $decryptedMessage;
 }

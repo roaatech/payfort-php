@@ -51,6 +51,7 @@ abstract class TokenizableOperation extends Operation {
         $command = @$responseData['service_command'] ?: @$responseData['command'];
 
         if ($command && ($forceTokenized || !ResponseStatusIdentifier::isFailure($status))) {
+
             /*
              * the process is success. The status is either:
              *  1. Tokenization request returned back with the token
@@ -60,7 +61,7 @@ abstract class TokenizableOperation extends Operation {
             switch ($command) {
                 case 'TOKENIZATION':
                     //tokenization finished, now should do the logic of purchase,
-                    $tokenName = @$responseCode['token_name'];
+                    $tokenName = @$responseData['token_name'];
                     $this->tokenGenerated($tokenName, $model, $responseData);
                     return $this->process($responseData);
                     break;
@@ -70,6 +71,7 @@ abstract class TokenizableOperation extends Operation {
                     break;
             }
         } else {
+
             return $this->failed($status, ResponseStatusIdentifier::name($status), ResponseCodeIdentifier::getStatusPart($responseCode), ResponseCodeIdentifier::message($responseCode), $responseData, $model);
         }
 
@@ -79,7 +81,6 @@ abstract class TokenizableOperation extends Operation {
     protected function tokenGenerated($tokenName, PaymentModel $paymentModel = null, array $responseData = null) {
         //by default, token should not be saved unless it is an authorize or recurrent payment
         //hence, nothing to do
-        dd($tokenName, $paymentModel, $responseData);
     }
 
 }
