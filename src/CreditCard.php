@@ -27,8 +27,7 @@ namespace ItvisionSy\Payment\PayFort;
  *
  */
 
-class CreditCard
-{
+class CreditCard {
 
     const TYPE_UNKNOWN = 0;
     const TYPE_MASTERCARD = 1;
@@ -38,7 +37,6 @@ class CreditCard
     const TYPE_DISCOVER = 5;
     const TYPE_ENROUTE = 6;
     const TYPE_JCB = 7;
-
     const ERROR_OK = 0;
     const ERROR_ECALL = 1;
     const ERROR_EARG = 2;
@@ -63,8 +61,7 @@ class CreditCard
      * @param string $cardExpiryDate in one of the formats: YY/MM, YYMM, YYYYMM, YYYY/MM
      * @param string $cardCVV2
      */
-    public function __construct($cardNumber, $cardHolderName, $cardExpiryDate, $cardCVV2)
-    {
+    public function __construct($cardNumber, $cardHolderName, $cardExpiryDate, $cardCVV2) {
         $this->set($cardNumber, $cardHolderName, $cardExpiryDate, $cardCVV2);
     }
 
@@ -75,9 +72,8 @@ class CreditCard
      * @param string $cardCVV2
      * @return $this;
      */
-    public function set($cardNumber, $cardHolderName, $cardExpiryDate, $cardCVV2)
-    {
-        $this->setCardNumber(preg_replace("#[^0-9]#", "", (string)$cardNumber));
+    public function set($cardNumber, $cardHolderName, $cardExpiryDate, $cardCVV2) {
+        $this->setCardNumber(preg_replace("#[^0-9]#", "", (string) $cardNumber));
         $this->setCardHolderName($cardHolderName);
         $this->setCardCVV2($cardCVV2);
         $this->setCardExpiryDate($cardExpiryDate);
@@ -91,8 +87,7 @@ class CreditCard
      * @param string $cardCVV2
      * @return CreditCard|static|$this
      */
-    public static function make($cardNumber, $cardHolderName, $cardExpiryDate, $cardCVV2)
-    {
+    public static function make($cardNumber, $cardHolderName, $cardExpiryDate, $cardCVV2) {
         return new static($cardNumber, $cardHolderName, $cardExpiryDate, $cardCVV2);
     }
 
@@ -100,8 +95,7 @@ class CreditCard
      * @param array $postData
      * @return CreditCard|null
      */
-    public static function makeFromPostData(array $postData)
-    {
+    public static function makeFromPostData(array $postData) {
         $cardNumber = $cardHolderName = $cardExpiryDate = $cardCVV2 = $cardExpiryMonth = $cardExpiryYear = null;
         foreach ($postData as $key => $value) {
             if (preg_match("#card_number|number#", $key)) {
@@ -132,16 +126,14 @@ class CreditCard
     /**
      * @return null|string
      */
-    public function getCardType()
-    {
+    public function getCardType() {
         return $this->detectTypeString();
     }
 
     /**
      * @return null|string
      */
-    protected function detectTypeString()
-    {
+    protected function detectTypeString() {
         if (!$this->cardNumber) {
             if (!$this->type) {
                 $this->cardNumberErrorNumber = static::ERROR_EARG;
@@ -179,8 +171,7 @@ class CreditCard
     /**
      * @return int
      */
-    protected function detectType()
-    {
+    protected function detectType() {
         if (!$this->cardNumber) {
             $this->cardNumberErrorNumber = static::ERROR_ECALL;
             return static::TYPE_UNKNOWN;
@@ -210,18 +201,71 @@ class CreditCard
     }
 
     /**
+     * Returns the type of the credit card number.
+     *
+     * Note that it does not validate the credit card number. It only detects the type based on the first identifier digits.
+     * 
+     * @param string $cardNumber
+     * @param boolean $returnNames
+     * @return string
+     */
+    public static function detectCreditCardtype($cardNumber, $returnNames = true) {
+
+        if (preg_match("/^5[1-5]/", $cardNumber)) {
+            $type = static::TYPE_MASTERCARD;
+        } elseif (preg_match("/^4/", $cardNumber)) {
+            $type = static::TYPE_VISA;
+        } elseif (preg_match("/^3[47]/", $cardNumber)) {
+            $type = static::TYPE_AMEX;
+        } else if (preg_match("/^[300-305]/", $cardNumber) || preg_match("/^3[68]/", $cardNumber)) {
+            $type = static::TYPE_DINNERS;
+        } elseif (preg_match("/^6011/", $cardNumber)) {
+            $type = static::TYPE_DISCOVER;
+        } elseif (preg_match("/^2(014|149)/", $cardNumber)) {
+            $type = static::TYPE_ENROUTE;
+        } elseif (preg_match("/^3/", $cardNumber) || preg_match("/^(2131|1800)/", $cardNumber)) {
+            $type = static::TYPE_JCB;
+        }
+
+        if (!$type) {
+            $type=static::TYPE_UNKNOWN;
+        }
+
+        if ($returnNames) {
+            switch ($type) {
+                case static::TYPE_MASTERCARD:
+                    $type="MASTERCARD";
+                case static::TYPE_VISA:
+                    $type="VISA";
+                case static::TYPE_AMEX:
+                    $type="AMEX";
+                case static::TYPE_DINNERS:
+                    $type="DINNERS";
+                case static::TYPE_DISCOVER:
+                    $type="DISCOVER";
+                case static::TYPE_ENROUTE:
+                    $type="ENROUTE";
+                case static::TYPE_JCB:
+                    $type="JCB";
+                default:
+                    $type="UNKNOWN";
+            }
+        }
+
+        return $type;
+    }
+
+    /**
      * @return int
      */
-    public function errno()
-    {
+    public function errno() {
         return $this->cardNumberErrorNumber ?: $this->cardExpiryErrorNumber;
     }
 
     /**
      * @return string
      */
-    public function error()
-    {
+    public function error() {
         switch ($this->cardNumberErrorNumber) {
             case static::ERROR_ECALL:
                 return "Invalid call for this method";
@@ -250,8 +294,7 @@ class CreditCard
      * @param string $securityKey
      * @return array
      */
-    public function toArray($numberKey = 'card_number', $holderKey = 'card_holder_name', $expiryKey = 'expiry_date', $securityKey = 'card_security_code')
-    {
+    public function toArray($numberKey = 'card_number', $holderKey = 'card_holder_name', $expiryKey = 'expiry_date', $securityKey = 'card_security_code') {
         $data = [];
         $data[$numberKey] = $this->getCardNumber();
         $data[$expiryKey] = $this->getCardExpiryDate();
@@ -263,8 +306,7 @@ class CreditCard
     /**
      * @return bool|string
      */
-    public function getCardNumber()
-    {
+    public function getCardNumber() {
         if (!$this->cardNumber) {
             $this->cardNumberErrorNumber = static::ERROR_ECALL;
             return false;
@@ -277,10 +319,9 @@ class CreditCard
      * @param string $cardNumber
      * @return CreditCard
      */
-    public function setCardNumber($cardNumber)
-    {
+    public function setCardNumber($cardNumber) {
 
-        $this->cardNumber = (string)$cardNumber;
+        $this->cardNumber = (string) $cardNumber;
         $this->type = static::TYPE_UNKNOWN;
         $this->cardNumberErrorNumber = static::ERROR_OK;
 
@@ -291,8 +332,7 @@ class CreditCard
     /**
      * @return string YYMM
      */
-    public function getCardExpiryDate()
-    {
+    public function getCardExpiryDate() {
         return $this->cardExpiryDate;
     }
 
@@ -300,8 +340,7 @@ class CreditCard
      * @param string $cardExpiryDate
      * @return CreditCard
      */
-    public function setCardExpiryDate($cardExpiryDate)
-    {
+    public function setCardExpiryDate($cardExpiryDate) {
         $raw = preg_replace('#[^0-9]#', '', $cardExpiryDate);
         $len = strlen($raw);
         switch ($len) {
@@ -330,8 +369,7 @@ class CreditCard
     /**
      * @return string
      */
-    public function getCardCVV2()
-    {
+    public function getCardCVV2() {
         return $this->cardCVV2;
     }
 
@@ -339,17 +377,15 @@ class CreditCard
      * @param string $cardCVV2
      * @return CreditCard
      */
-    public function setCardCVV2($cardCVV2)
-    {
-        $this->cardCVV2 = (string)$cardCVV2;
+    public function setCardCVV2($cardCVV2) {
+        $this->cardCVV2 = (string) $cardCVV2;
         return $this;
     }
 
     /**
      * @return string
      */
-    public function getCardHolderName()
-    {
+    public function getCardHolderName() {
         return $this->cardHolderName;
     }
 
@@ -357,17 +393,15 @@ class CreditCard
      * @param string $cardHolderName in one of the formats: YY/MM, YYMM, YYYYMM, YYYY/MM
      * @return CreditCard
      */
-    public function setCardHolderName($cardHolderName)
-    {
-        $this->cardHolderName = (string)$cardHolderName;
+    public function setCardHolderName($cardHolderName) {
+        $this->cardHolderName = (string) $cardHolderName;
         return $this;
     }
 
     /**
      * @return bool
      */
-    protected function check()
-    {
+    protected function check() {
         if (!$this->detectType($this->cardNumber)) {
             $this->cardNumberErrorNumber = static::ERROR_ETYPE;
             return false;
@@ -379,8 +413,7 @@ class CreditCard
         return true;
     }
 
-    protected function mod10()
-    {
+    protected function mod10() {
         for ($sum = 0, $i = strlen($this->cardNumber) - 1; $i >= 0; $i--) {
             $sum += $this->cardNumber[$i];
             $doubdigit = "" . (2 * $this->cardNumber[--$i]);
@@ -390,4 +423,5 @@ class CreditCard
         }
         return $sum % 10;
     }
+
 }
