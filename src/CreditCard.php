@@ -204,7 +204,7 @@ class CreditCard {
      * Returns the type of the credit card number.
      *
      * Note that it does not validate the credit card number. It only detects the type based on the first identifier digits.
-     * 
+     *
      * @param string $cardNumber
      * @param boolean $returnNames
      * @return string
@@ -225,9 +225,7 @@ class CreditCard {
             $type = static::TYPE_ENROUTE;
         } elseif (preg_match("/^3/", $cardNumber) || preg_match("/^(2131|1800)/", $cardNumber)) {
             $type = static::TYPE_JCB;
-        }
-
-        if (!$type) {
+        } else {
             $type=static::TYPE_UNKNOWN;
         }
 
@@ -235,20 +233,28 @@ class CreditCard {
             switch ($type) {
                 case static::TYPE_MASTERCARD:
                     $type="MASTERCARD";
+                    break;
                 case static::TYPE_VISA:
                     $type="VISA";
+                    break;
                 case static::TYPE_AMEX:
                     $type="AMEX";
+                    break;
                 case static::TYPE_DINNERS:
                     $type="DINNERS";
+                    break;
                 case static::TYPE_DISCOVER:
                     $type="DISCOVER";
+                    break;
                 case static::TYPE_ENROUTE:
                     $type="ENROUTE";
+                    break;
                 case static::TYPE_JCB:
                     $type="JCB";
+                    break;
                 default:
                     $type="UNKNOWN";
+                    break;
             }
         }
 
