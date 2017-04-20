@@ -200,6 +200,15 @@ class CreditCard {
         return $this->type;
     }
 
+    /**
+     * Returns the type of the credit card number.
+     *
+     * Note that it does not validate the credit card number. It only detects the type based on the first identifier digits.
+     * 
+     * @param string $cardNumber
+     * @param boolean $returnNames
+     * @return string
+     */
     public static function detectCreditCardtype($cardNumber, $returnNames = true) {
 
         if (preg_match("/^5[1-5]/", $cardNumber)) {
